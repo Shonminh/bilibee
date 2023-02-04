@@ -7,7 +7,7 @@
 ## 数据流图
 大致思路
 
-![bilibee_data_flow.png](assets%2Fpic%2Fbilibee_data_flow.png)
+![bilibee_data_flow.png](assets/pic/bilibee_data_flow.png)
 
 
 ## 进展
