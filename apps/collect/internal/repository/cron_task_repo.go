@@ -18,7 +18,7 @@ const batchSize = 100
 
 func (impl *CronTaskRepoImpl) CreateCronTask(ctx context.Context, row model.CronTaskTab) (err error) {
 	if err = impl.Db.CreateInBatches(&row, batchSize).Error; err != nil {
-		return errors.Wrapf(err, "CreateInBatches, row=%+v", row)
+		return errors.Wrapf(err, "CreateCronTask, row=%+v", row)
 	}
 	return nil
 }
