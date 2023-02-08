@@ -9,3 +9,7 @@ type CronTaskTab struct {
 	CreateTime uint64 `gorm:"column:create_time;type:BIGINT(21) UNSIGNED;NOT NULL"`
 	UpdateTime uint64 `gorm:"column:update_time;type:BIGINT(21) UNSIGNED;NOT NULL"`
 }
+
+func (c CronTaskTab) TableName() string {
+	return "cron_task_tab"
+}

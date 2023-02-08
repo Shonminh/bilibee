@@ -14,3 +14,7 @@ type VideoInfoTab struct {
 	CreateTime      uint64 `gorm:"column:create_time;type:BIGINT(21) UNSIGNED;NOT NULL"`
 	UpdateTime      uint64 `gorm:"column:update_time;type:BIGINT(21) UNSIGNED;NOT NULL"`
 }
+
+func (v VideoInfoTab) TableName() string {
+	return "video_info_tab"
+}
