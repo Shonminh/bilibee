@@ -1,1 +1,1 @@
-wire	gen ./cmd/collect
+wire	gen ./cmd/collect_server
