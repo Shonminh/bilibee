@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"time"
 	"unicode/utf8"
 
 	"github.com/sirupsen/logrus"
@@ -170,7 +169,7 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
-		timestampFormat = time.RFC3339
+		timestampFormat = "2006-01-02T15:04:05.999999999"
 	}
 
 	for _, key := range fixedKeys {

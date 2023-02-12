@@ -18,9 +18,9 @@ func NewDB() *gorm.DB {
 	userName := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
 	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/bilibee_db?charset=utf8mb4&parseTime=True&loc=Local", userName, password)
-	newLogger := logger2.New(
+	newLogger := New(
 		&logger.Logger{},
-		logger2.Config{
+		Config{
 			SlowThreshold:             time.Second * 3, // 慢 SQL 阈值
 			LogLevel:                  logger2.Info,    // 日志级别
 			IgnoreRecordNotFoundError: true,            // 忽略ErrRecordNotFound（记录未找到）错误
