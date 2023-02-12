@@ -17,21 +17,24 @@ import (
 func NewDB() *gorm.DB {
 	userName := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
-	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/miner_db?charset=utf8mb4&parseTime=True&loc=Local", userName, password)
+	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/bilibee_db?charset=utf8mb4&parseTime=True&loc=Local", userName, password)
 	newLogger := logger2.New(
 		&logger.Logger{},
 		logger2.Config{
 			SlowThreshold:             time.Second * 3, // 慢 SQL 阈值
 			LogLevel:                  logger2.Info,    // 日志级别
 			IgnoreRecordNotFoundError: true,            // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  true,            // 禁用彩色打印
-		},
-	)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{SkipDefaultTransaction: true,
-		Logger: newLogger,
-	})
+		})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{SkipDefaultTransaction: true, Logger: newLogger})
 	if err != nil {
-		panic(err)
+		logger.LogPanic(err)
+	}
+	d, err := db.DB()
+	if err != nil {
+		logger.LogPanic(err)
+	}
+	if err = d.Ping(); err != nil {
+		logger.LogPanic(err)
 	}
 	return db
 }
@@ -46,17 +49,23 @@ var ErrGetDBFailed = errors.New("ErrGetDBFailed")
 func Transaction(ctx context.Context, f txFunc) error {
 	db := GetDb(ctx)
 	tx := db.Begin()
+	tx.Logger.Info(ctx, "Begin")
+	newCtx := SetDbContext(ctx, tx)
+
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
+			tx.Logger.Info(newCtx, "Rollback")
 		}
 	}()
-	newCtx := SetDbContext(ctx, tx)
 	if err := f(newCtx); err != nil {
 		tx.Rollback()
+		tx.Logger.Info(newCtx, "Rollback")
 		return err
 	}
-	return tx.Commit().Error
+	err := tx.Commit().Error
+	tx.Logger.Info(newCtx, "Commit")
+	return err
 }
 
 func GetDb(ctx context.Context) *gorm.DB {

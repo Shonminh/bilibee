@@ -6,15 +6,10 @@ import (
 )
 
 func main() {
-	setUp()
 	app, err := InitCollectApp()
 	if err != nil {
 		logger.LogPanicf("err=%v", err)
 	}
 	app.Register()
 	_ = app.RunHttpServer(":8080")
-}
-
-func setUp() {
-	// init DB
 }

@@ -1,5 +1,7 @@
 package model
 
+import "strconv"
+
 type CronTaskTab struct {
 	Id         uint64 `gorm:"column:id;type:BIGINT(21) UNSIGNED;PRIMARY_KEY;AUTO_INCREMENT;NOT NULL"`
 	TaskId     string `gorm:"column:task_id;type:VARCHAR(64);NOT NULL"`
@@ -12,4 +14,14 @@ type CronTaskTab struct {
 
 func (c CronTaskTab) TableName() string {
 	return "cron_task_tab"
+}
+
+func genTaskId(mid int64) string {
+	return strconv.FormatInt(mid, 10)
+}
+
+func NewCronTaskTab(mid int64) CronTaskTab {
+	res := CronTaskTab{}
+	res.TaskId = genTaskId(mid)
+	return res
 }
