@@ -15,3 +15,5 @@
 # vendor/
 
 wire_gen.go
+
+log/

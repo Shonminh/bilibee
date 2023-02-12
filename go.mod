@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/deckarep/golang-set/v2 v2.1.0
+	github.com/gin-contrib/logger v0.2.5
 	github.com/gin-gonic/gin v1.8.2
 	github.com/google/wire v0.5.0
 	github.com/iyear/biligo v0.1.5
@@ -36,10 +37,12 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
+	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/swaggo/swag v1.8.1 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
