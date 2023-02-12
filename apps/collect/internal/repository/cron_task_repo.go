@@ -32,6 +32,9 @@ func (impl *CronTaskRepoImpl) QueryUndoCronTaskList(ctx context.Context, limit i
 }
 
 func (impl *CronTaskRepoImpl) UpdateCronTaskInfo(ctx context.Context, taskId string, updateArgs map[string]interface{}) (err error) {
+	if _, ok := updateArgs["update_time"]; !ok {
+		updateArgs["update_time"] = time.NowUint64()
+	}
 	err = db.GetDb(ctx).Model(&model.CronTaskTab{}).Where("task_id = ? ", taskId).Updates(updateArgs).Error
 	return errors.Wrapf(err, "UpdateCronTaskInfo, task_id=%s, updateArgs=%+v, err=%+v", taskId, updateArgs, err)
 }

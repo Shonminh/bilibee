@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/http"
 	"strings"
+	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	bg "github.com/iyear/biligo"
@@ -111,7 +112,7 @@ func (impl *BilibiliClientImpl) QueryMidTotalAidList(ctx context.Context, mid in
 	for index := 1; ; index++ {
 		result, err := impl.commonCli.SpaceSearchVideo(mid, "", 0, "", index, size)
 		if err != nil {
-			return nil, 0, errors.Wrap(err, "SpaceSearchVideo")
+			return nil, 0, errors.Wrapf(err, "SpaceSearchVideo failed, mid=%+v, limit=%+v", mid, limit)
 		}
 		if result.List == nil || len(result.List.Vlist) == 0 {
 			break
@@ -130,6 +131,7 @@ func (impl *BilibiliClientImpl) QueryMidTotalAidList(ctx context.Context, mid in
 		if maxSize <= 0 {
 			break
 		}
+		time.Sleep(time.Millisecond * 500) // 先限下速度，防止直接给弄崩了。
 	}
 	if limit != nil && int64(len(aidList)) > *limit {
 		aidList = aidList[:*limit]

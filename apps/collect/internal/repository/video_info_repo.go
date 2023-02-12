@@ -5,6 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"gorm.io/gorm/clause"
+
 	"github.com/Shonminh/bilibee/apps/collect/internal/repository/model"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/time"
@@ -13,12 +15,15 @@ import (
 type VideoInfoRepoImpl struct {
 }
 
-func (impl *VideoInfoRepoImpl) CreateVideoInfo(ctx context.Context, row model.VideoInfoTab) (err error) {
+func (impl *VideoInfoRepoImpl) BatchCreateVideoInfos(ctx context.Context, rows []model.VideoInfoTab) (err error) {
 	now := time.NowUint64()
-	row.CreateTime = now
-	row.UpdateTime = now
-	if err = db.GetDb(ctx).Create(&row).Error; err != nil {
-		return errors.Wrapf(err, "CreateVideoInfo, row=%+v", row)
+	for index := range rows {
+		rows[index].CreateTime = now
+		rows[index].UpdateTime = now
+	}
+	// 如果有冲突则什么都不做
+	if err = db.GetDb(ctx).Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches(rows, batchSize).Error; err != nil {
+		return errors.Wrapf(err, "BatchCreateVideoInfos, rows=%+v", rows)
 	}
 	return nil
 }

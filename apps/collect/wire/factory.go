@@ -15,7 +15,7 @@ func NewVideoCollectSchema(VideoCollectService api.VideoCollectService) *http.Vi
 }
 
 func NewVideoCollectService(repo api2.CronTaskRepo) api.VideoCollectService {
-	return &internal.VideoCollectServiceImpl{Repo: repo}
+	return &internal.VideoCollectServiceImpl{CronTaskRepo: repo}
 }
 
 func NewCronTaskRepo() api2.CronTaskRepo {
