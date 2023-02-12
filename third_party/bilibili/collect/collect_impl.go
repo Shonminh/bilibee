@@ -3,6 +3,7 @@ package collect
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"net/http"
 	"strings"
 
@@ -100,12 +101,17 @@ func checkChineseLan(lan string) bool {
 	return strings.Contains(lan, "zh")
 }
 
-func (impl *BilibiliClientImpl) QueryMidTotalAidList(ctx context.Context, mid int64) (aidList []int64, err error) {
+func (impl *BilibiliClientImpl) QueryMidTotalAidList(ctx context.Context, mid int64, limit *int64) (aidList []int64, totalCount int, err error) {
 	const size = 50 // 测试了下b站的翻页最大为50
+	maxSize := int64(math.MaxInt64)
+	if limit != nil {
+		maxSize = *limit
+	}
+
 	for index := 1; ; index++ {
 		result, err := impl.commonCli.SpaceSearchVideo(mid, "", 0, "", index, size)
 		if err != nil {
-			return nil, errors.Wrap(err, "SpaceSearchVideo")
+			return nil, 0, errors.Wrap(err, "SpaceSearchVideo")
 		}
 		if result.List == nil || len(result.List.Vlist) == 0 {
 			break
@@ -114,9 +120,19 @@ func (impl *BilibiliClientImpl) QueryMidTotalAidList(ctx context.Context, mid in
 		for _, v := range vlist {
 			aidList = append(aidList, v.AID)
 		}
+		if totalCount == 0 {
+			totalCount = result.Page.Count
+		}
 		if len(result.List.Vlist) < size {
 			break
 		}
+		maxSize -= size
+		if maxSize <= 0 {
+			break
+		}
 	}
-	return aidList, nil
+	if limit != nil && int64(len(aidList)) > *limit {
+		aidList = aidList[:*limit]
+	}
+	return aidList, totalCount, nil
 }
