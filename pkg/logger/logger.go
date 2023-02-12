@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	logrus.SetFormatter(&LogFormatter{})
+	logrus.SetFormatter(NewLogFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
 	file, err := GetOutput()
 	if err == nil {

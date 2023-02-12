@@ -26,7 +26,7 @@ var format = func(i interface{}) string { return fmt.Sprintf("%s;", i) }
 
 const timeFormat = "2006-01-02T15:04:05.999999999"
 
-func UseMysqlLogger() gin.HandlerFunc {
+func UseGinLogger() gin.HandlerFunc {
 	output, err := logger.GetOutput()
 	if err != nil {
 		logger.LogPanic(err)

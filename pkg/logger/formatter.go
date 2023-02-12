@@ -54,6 +54,10 @@ type LogFormatter struct {
 	levelTextMaxLength int
 }
 
+func NewLogFormatter() *LogFormatter {
+	return &LogFormatter{DisableQuote: true}
+}
+
 func (f *LogFormatter) init(entry *logrus.Entry) {
 	// Get the max length of the level text
 	for _, level := range logrus.AllLevels {
@@ -180,7 +184,7 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		case key == f.FieldMap.resolve(logrus.FieldKeyLevel):
 			value = strings.ToUpper(entry.Level.String())
 		case key == f.FieldMap.resolve(logrus.FieldKeyMsg):
-			value = entry.Message
+			value = fmt.Sprintf("%q", entry.Message) // message强制用双引号包起来，防止message中出现换行等字符。
 		case key == f.FieldMap.resolve(logrus.FieldKeyFunc) && entry.HasCaller():
 			value = funcVal
 		case key == f.FieldMap.resolve(logrus.FieldKeyFile) && entry.HasCaller():
