@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -8,7 +9,7 @@ import (
 
 func init() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	file, err := os.OpenFile("log/data.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := GetOutput()
 	if err == nil {
 		logrus.SetOutput(file)
 	} else {
@@ -18,6 +19,11 @@ func init() {
 }
 
 type Logger struct {
+}
+
+func GetOutput() (io.Writer, error) {
+	file, err := os.OpenFile("log/data.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	return file, err
 }
 
 // LogDebug logs a message at level Debug on the standard logger.
