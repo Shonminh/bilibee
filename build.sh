@@ -1,0 +1,1 @@
+wire	gen ./cmd/collect
