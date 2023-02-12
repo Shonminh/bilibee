@@ -19,7 +19,7 @@ func UseMysql(d *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := c.Request
 		ctx := req.Context()
-		newCtx := db.SetDbContext(ctx, d)
+		newCtx := db.BindDbContext(ctx, d)
 		c.Request = req.WithContext(newCtx)
 	}
 }

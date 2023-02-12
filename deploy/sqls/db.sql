@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS bilibee_db.video_info_tab
     user_ctime         bigint(21) unsigned DEFAULT 0  NOT NULL,
     subtitle_content   mediumtext,
     raw_str            mediumtext,
+    op_status          int(11) unsigned DEFAULT 0  NOT NULL,
     create_time        bigint(21) unsigned DEFAULT 0  NOT NULL,
     update_time        bigint(21) unsigned DEFAULT 0  NOT NULL,
     KEY idx_mid(mid),

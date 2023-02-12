@@ -11,6 +11,7 @@ type VideoInfoTab struct {
 	UserCtime       uint64 `gorm:"column:user_ctime;type:BIGINT(21) UNSIGNED;NOT NULL"`
 	SubtitleContent string `gorm:"column:subtitle_content;type:MEDIUMTEXT;"`
 	RawStr          string `gorm:"column:raw_str;type:MEDIUMTEXT;"`
+	OpStatus        uint32 `gorm:"column:op_status;type:INT(11) UNSIGNED;NOT NULL"`
 	CreateTime      uint64 `gorm:"column:create_time;type:BIGINT(21) UNSIGNED;NOT NULL"`
 	UpdateTime      uint64 `gorm:"column:update_time;type:BIGINT(21) UNSIGNED;NOT NULL"`
 }

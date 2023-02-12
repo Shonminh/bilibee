@@ -20,6 +20,11 @@ func genTaskId(mid int64) string {
 	return strconv.FormatInt(mid, 10)
 }
 
+func (c CronTaskTab) GetMid() int64 {
+	parseInt, _ := strconv.ParseInt(c.TaskId, 10, 64)
+	return parseInt
+}
+
 func NewCronTaskTab(mid int64) CronTaskTab {
 	res := CronTaskTab{}
 	res.TaskId = genTaskId(mid)

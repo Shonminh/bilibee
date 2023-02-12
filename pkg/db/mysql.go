@@ -56,7 +56,7 @@ func Transaction(c context.Context, f txFunc) error {
 			logger.LogInfo("Rollback")
 		}
 	}()
-	newCtx := SetDbContext(c, tx)
+	newCtx := BindDbContext(c, tx)
 	if err := f(newCtx); err != nil {
 		tx.Rollback()
 		logger.LogInfo("Rollback")
@@ -79,6 +79,6 @@ func GetDb(ctx context.Context) *gorm.DB {
 	return db
 }
 
-func SetDbContext(parent context.Context, db *gorm.DB) context.Context {
+func BindDbContext(parent context.Context, db *gorm.DB) context.Context {
 	return context.WithValue(parent, mysqlDbInstanceKey, db)
 }
