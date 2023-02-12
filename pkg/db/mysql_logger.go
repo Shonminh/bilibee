@@ -13,23 +13,6 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-// ErrRecordNotFound record not found error
-var ErrRecordNotFound = errors.New("record not found")
-
-// LogLevel log level
-// type LogLevel int
-//
-// const (
-// 	// Silent silent log level
-// 	Silent LogLevel = iota + 1
-// 	// Error error log level
-// 	Error
-// 	// Warn warn log level
-// 	Warn
-// 	// Info info log level
-// 	Info
-// )
-
 // Writer log writer interface
 type Writer interface {
 	Printf(string, ...interface{})
@@ -44,18 +27,10 @@ type Config struct {
 	LogLevel                  logger.LogLevel
 }
 
-// Interface mysqlLogger interface
-// type Interface interface {
-// 	LogMode(LogLevel) Interface
-// 	Info(context.Context, string, ...interface{})
-// 	Warn(context.Context, string, ...interface{})
-// 	Error(context.Context, string, ...interface{})
-// 	Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error)
-// }
-
 var (
 	// Discard Discard mysqlLogger will print any log to io.Discard
 	Discard = New(log.New(io.Discard, "", log.LstdFlags), Config{})
+
 	// Default Default mysqlLogger
 	Default = New(log.New(os.Stdout, "\r\n", log.LstdFlags), Config{
 		SlowThreshold:             200 * time.Millisecond,
@@ -63,9 +38,12 @@ var (
 		IgnoreRecordNotFoundError: false,
 		Colorful:                  true,
 	})
-	// Recorder Recorder mysqlLogger records running SQL into a recorder instance
-	Recorder = traceRecorder{Interface: Default, BeginAt: time.Now()}
 )
+
+func init() {
+	logger.Discard = Discard
+	logger.Default = Default
+}
 
 // New initialize mysqlLogger
 func New(writer Writer, config Config) logger.Interface {
@@ -133,7 +111,7 @@ func (l mysqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.LogLevel >= logger.Error && (!errors.Is(err, ErrRecordNotFound) || !l.IgnoreRecordNotFoundError):
+	case err != nil && l.LogLevel >= logger.Error && (!errors.Is(err, logger.ErrRecordNotFound) || !l.IgnoreRecordNotFoundError):
 		sql, rows := fc()
 		if rows == -1 {
 			l.Printf(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
