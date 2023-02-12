@@ -39,18 +39,18 @@ func NewDB() *gorm.DB {
 	return db
 }
 
-type txFunc func(c context.Context) error
+type txFunc func(ctx context.Context) error
 
 const mysqlDbInstanceKey = "mysql_db_instance_key"
 
 var ErrDBNil = errors.New("ErrDBNil")
 var ErrGetDBFailed = errors.New("ErrGetDBFailed")
 
-func Transaction(ctx context.Context, f txFunc) error {
-	db := GetDb(ctx)
+func Transaction(c context.Context, f txFunc) error {
+	db := GetDb(c)
 	tx := db.Begin()
-	tx.Logger.Info(ctx, "Begin")
-	newCtx := SetDbContext(ctx, tx)
+	tx.Logger.Info(c, "Begin")
+	newCtx := SetDbContext(c, tx)
 
 	defer func() {
 		if r := recover(); r != nil {
