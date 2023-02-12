@@ -1,7 +1,9 @@
 package gin
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"strings"
 
 	l "github.com/gin-contrib/logger"
@@ -25,13 +27,22 @@ func UseMysql(d *gorm.DB) gin.HandlerFunc {
 var format = func(i interface{}) string { return fmt.Sprintf("%s;", i) }
 
 const timeFormat = "2006-01-02T15:04:05.999999999"
+const maxReqDataLength = 4096
 
 func UseGinLogger() gin.HandlerFunc {
 	output, err := logger.GetOutput()
 	if err != nil {
 		logger.LogPanic(err)
 	}
-	return l.SetLogger(l.WithLogger(func(context *gin.Context, z zerolog.Logger) zerolog.Logger {
+	return l.SetLogger(l.WithLogger(func(ctx *gin.Context, z zerolog.Logger) zerolog.Logger {
+		data, _ := ctx.GetRawData()
+		if len(data) > maxReqDataLength {
+			data = data[:maxReqDataLength]
+		}
+		logger.LogInfof("%s", string(data))
+		// 赋值，保证下次可以读取
+		readCloser := io.NopCloser(bytes.NewReader(data))
+		ctx.Request.Body = readCloser
 		consoleWriter := zerolog.ConsoleWriter{
 			Out:        output,
 			NoColor:    true,
@@ -39,7 +50,7 @@ func UseGinLogger() gin.HandlerFunc {
 			FormatLevel: func(i interface{}) string {
 				return strings.ToUpper(fmt.Sprintf("|%s|", i))
 			},
-			FormatMessage:       func(i interface{}) string { return fmt.Sprintf("message=%s;", i) },
+			FormatMessage:       func(i interface{}) string { return fmt.Sprintf("message=%s; req_body=%q;", i, string(data)) },
 			FormatFieldValue:    format,
 			FormatErrFieldValue: format,
 		}
