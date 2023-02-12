@@ -49,22 +49,21 @@ var ErrGetDBFailed = errors.New("ErrGetDBFailed")
 func Transaction(c context.Context, f txFunc) error {
 	db := GetDb(c)
 	tx := db.Begin()
-	tx.Logger.Info(c, "Begin")
-	newCtx := SetDbContext(c, tx)
-
+	logger.LogInfo("Begin")
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			tx.Logger.Info(newCtx, "Rollback")
+			logger.LogInfo("Rollback")
 		}
 	}()
+	newCtx := SetDbContext(c, tx)
 	if err := f(newCtx); err != nil {
 		tx.Rollback()
-		tx.Logger.Info(newCtx, "Rollback")
+		logger.LogInfo("Rollback")
 		return err
 	}
 	err := tx.Commit().Error
-	tx.Logger.Info(newCtx, "Commit")
+	logger.LogInfo("Commit")
 	return err
 }
 

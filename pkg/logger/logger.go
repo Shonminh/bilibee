@@ -8,14 +8,13 @@ import (
 )
 
 func init() {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetFormatter(&LogFormatter{})
 	file, err := GetOutput()
 	if err == nil {
 		logrus.SetOutput(file)
 	} else {
 		logrus.Info("Failed to log to file, using default stderr")
 	}
-	// logrus.SetOutput(os.Stdout)
 }
 
 type Logger struct {
