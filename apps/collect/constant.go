@@ -11,9 +11,13 @@ func (t CronTaskStatus) Uint32() uint32 {
 	return uint32(t)
 }
 
-type OpStatus int
+type OpStatus uint32
 
 const (
 	OpStatusUndo OpStatus = iota
 	OpStatusDone
 )
+
+func (o OpStatus) Uint32() uint32 {
+	return uint32(o)
+}
