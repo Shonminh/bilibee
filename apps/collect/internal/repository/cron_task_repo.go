@@ -38,3 +38,12 @@ func (impl *CronTaskRepoImpl) UpdateCronTaskInfo(ctx context.Context, taskId str
 	err = db.GetDb(ctx).Model(&model.CronTaskTab{}).Where("task_id = ? ", taskId).Updates(updateArgs).Error
 	return errors.Wrapf(err, "UpdateCronTaskInfo, task_id=%s, updateArgs=%+v, err=%+v", taskId, updateArgs, err)
 }
+
+func (impl *CronTaskRepoImpl) FlushUndoStatusTask(ctx context.Context, durationSecond int) (err error) {
+	updateTime := time.NowInt() - durationSecond
+	err = db.GetDb(ctx).Model(&model.CronTaskTab{}).Where("update_time < ? ", updateTime).Updates(map[string]interface{}{
+		"op_status":   collect.TaskStatusUndo,
+		"update_time": time.NowInt(),
+	}).Error
+	return errors.Wrap(err, "FlushCronTaskStatus")
+}

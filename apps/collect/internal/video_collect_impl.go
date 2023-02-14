@@ -39,6 +39,13 @@ func (impl *VideoCollectServiceImpl) CreateCronTask(ctx context.Context, mid int
 const defaultSize int = 100
 
 func (impl *VideoCollectServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
+	defer func() {
+		// 针对状态为done的且更新时间大于1小时的任务，刷新任务状态为undo
+		if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, int(time.Hour)); e != nil {
+			logger.LogErrorf("FlushUndoStatusTask, err%+v", e.Error())
+			time.Sleep(time.Second * 3)
+		}
+	}()
 	cronTaskList, err := impl.CronTaskRepo.QueryUndoCronTaskList(ctx, defaultSize)
 	if err != nil {
 		return errors.Wrap(err, "QueryUndoCronTaskList")
@@ -61,16 +68,17 @@ func (impl *VideoCollectServiceImpl) doSingleTask(ctx context.Context, task mode
 			time.Sleep(time.Second * 3) // 停三秒
 		}
 		// 更新一下task的进度
-		count, e := impl.VideoInfoRepo.CountVideoInfo(ctx, mid, proto.Uint32(collect.OpStatusUndo.Uint32()))
+		count, e := impl.VideoInfoRepo.CountVideoInfo(ctx, mid, proto.Uint32(collect.OpStatusDone.Uint32()))
 		if e != nil {
 			logger.LogErrorf("CountVideoInfo failed, err=%+v", e.Error())
 			return
 		}
 		// 更新任务列表中的total num数量和offset num数量
-		e = impl.CronTaskRepo.UpdateCronTaskInfo(ctx, task.TaskId, map[string]interface{}{
-			"offset_num": count,
-			"total_num":  totalCount,
-		})
+		updateArgs := map[string]interface{}{"offset_num": count, "total_num": totalCount}
+		if count == int64(totalCount) { // 相等的时候则更新为已完结
+			updateArgs["task_status"] = collect.TaskStatusDone.Uint32()
+		}
+		e = impl.CronTaskRepo.UpdateCronTaskInfo(ctx, task.TaskId, updateArgs)
 		if e != nil {
 			logger.LogErrorf("UpdateCronTaskInfo failed, err=%+v", e.Error())
 			return
