@@ -13,6 +13,7 @@ import (
 	"github.com/Shonminh/bilibee/apps/collect/internal/repository/model"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/logger"
+	time2 "github.com/Shonminh/bilibee/pkg/time"
 	collect2 "github.com/Shonminh/bilibee/third_party/bilibili/collect"
 )
 
@@ -38,13 +39,16 @@ func (impl *VideoCollectServiceImpl) CreateCronTask(ctx context.Context, mid int
 
 const defaultSize int = 100
 const hour = 3600
+const quarter = 900
 
 func (impl *VideoCollectServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
 	defer func() {
 		// 针对状态为done的且更新时间大于1小时的任务，刷新任务状态为undo
-		if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, hour); e != nil {
-			logger.LogErrorf("FlushUndoStatusTask, err%+v", e.Error())
-			time.Sleep(time.Second * 3)
+		if time2.NowInt()%quarter == 0 { // 每15分钟执行以下FlushUndoStatusTask
+			if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, hour); e != nil {
+				logger.LogErrorf("FlushUndoStatusTask, err%+v", e.Error())
+				time.Sleep(time.Second * 3)
+			}
 		}
 	}()
 	cronTaskList, err := impl.CronTaskRepo.QueryUndoCronTaskList(ctx, defaultSize)
