@@ -19,7 +19,7 @@ import (
 type VideoCollectServiceImpl struct {
 	CronTaskRepo  api.CronTaskRepo
 	VideoInfoRepo api.VideoInfoRepo
-	biliClient    collect2.BilibiliClient
+	BiliClient    collect2.BilibiliClient
 }
 
 func (impl *VideoCollectServiceImpl) CreateCronTask(ctx context.Context, mid int64) (err error) {
@@ -83,7 +83,7 @@ func (impl *VideoCollectServiceImpl) doSingleTask(ctx context.Context, task mode
 		return nil
 	}
 	// 从b站查询mid所有的aid list
-	aidList, totalCount, err := impl.biliClient.QueryMidTotalAidList(ctx, mid, nil)
+	aidList, totalCount, err := impl.BiliClient.QueryMidTotalAidList(ctx, mid, nil)
 	if err != nil {
 		return errors.Wrap(err, "QueryMidTotalAidList")
 	}
@@ -126,7 +126,7 @@ func (impl *VideoCollectServiceImpl) batchUpdateVideoInfo(ctx context.Context, m
 		}
 		for index := range videoInfoList {
 			aid := videoInfoList[index].Aid
-			info, err := impl.biliClient.QueryVideoInfoByAid(ctx, int64(aid))
+			info, err := impl.BiliClient.QueryVideoInfoByAid(ctx, int64(aid))
 			if err != nil {
 				logger.LogErrorf("QueryVideoInfoByAid failed, aid=%s, info=%+v", aid, info)
 				continue
