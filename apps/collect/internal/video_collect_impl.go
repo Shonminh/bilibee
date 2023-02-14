@@ -151,13 +151,20 @@ func (impl *VideoCollectServiceImpl) batchUpdateVideoInfo(ctx context.Context, m
 	return nil
 }
 
+const videoUri = "https://www.bilibili.com/video/"
+
 func (impl *VideoCollectServiceImpl) transformVideoInfo(info *collect2.VideoInfo, mid int64, aid uint64) model.VideoInfoTab {
 	desc, _ := json.Marshal(info.DescV2)
 	rawStr, _ := json.Marshal(info)
+	url := ""
+	if len(info.BVID) > 0 {
+		url = videoUri + info.BVID
+	}
 	infoTab := model.VideoInfoTab{
 		Mid:             uint32(mid),
 		Aid:             aid,
 		Bvid:            info.BVID,
+		Url:             url,
 		Title:           info.Title,
 		DescV2:          string(desc),
 		Pubdate:         uint64(info.Pubdate),

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS bilibee_db.video_info_tab
     mid                int(11) unsigned DEFAULT 0  NOT NULL,
     aid                bigint(21) unsigned DEFAULT 0  NOT NULL,
     bvid               varchar(128)      DEFAULT '' NOT NULL,
+    url                varchar(256)      DEFAULT '' NOT NULL,
     title              varchar(1024)      DEFAULT '' NOT NULL,
     desc_v2            text,
     pubdate            bigint(21) unsigned DEFAULT 0  NOT NULL,

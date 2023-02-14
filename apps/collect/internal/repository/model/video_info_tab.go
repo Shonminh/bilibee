@@ -5,6 +5,7 @@ type VideoInfoTab struct {
 	Mid             uint32 `gorm:"column:mid;type:INT(11) UNSIGNED;NOT NULL"`
 	Aid             uint64 `gorm:"column:aid;type:BIGINT(21) UNSIGNED;NOT NULL"`
 	Bvid            string `gorm:"column:bvid;type:VARCHAR(128);NOT NULL"`
+	Url             string `gorm:"column:url;type:VARCHAR(256);NOT NULL"`
 	Title           string `gorm:"column:title;type:VARCHAR(1024);NOT NULL"`
 	DescV2          string `gorm:"column:desc_v2;type:TEXT;"`
 	Pubdate         uint64 `gorm:"column:pubdate;type:BIGINT(21) UNSIGNED;NOT NULL"`
