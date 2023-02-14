@@ -7,7 +7,7 @@ import (
 	"github.com/Shonminh/bilibee/pkg/http"
 )
 
-type VideoCollectSchema struct {
+type VideoCollectHttpSchema struct {
 	VideoCollectService api.VideoCollectService
 }
 
@@ -15,7 +15,7 @@ type VideoCollectReq struct {
 	Mid int64 `json:"mid"`
 }
 
-func (schema *VideoCollectSchema) CreateCronTask(ctx *gin.Context) {
+func (schema *VideoCollectHttpSchema) CreateCronTask(ctx *gin.Context) {
 	var req VideoCollectReq
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {

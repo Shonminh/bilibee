@@ -14,7 +14,7 @@ import (
 
 type CollectServerApp struct {
 	router             *gin.Engine
-	videoCollectSchema *http.VideoCollectSchema
+	videoCollectSchema *http.VideoCollectHttpSchema
 }
 
 func (app *CollectServerApp) Register() {
@@ -27,7 +27,7 @@ func (app *CollectServerApp) RunHttpServer(address string) error {
 
 func InitCollectApp() (*CollectServerApp, error) {
 	wire.Build(
-		collect.CollectSet,
+		collect.CollectServerSet,
 		routers.NewRouters,
 		db.NewDB,
 		wire.Struct(new(CollectServerApp), "*"),

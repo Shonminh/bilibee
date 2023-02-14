@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"github.com/Shonminh/bilibee/apps/collect/access/crontask"
 	"github.com/Shonminh/bilibee/apps/collect/access/http"
 	"github.com/Shonminh/bilibee/apps/collect/api"
 	"github.com/Shonminh/bilibee/apps/collect/internal"
@@ -8,8 +9,8 @@ import (
 	api2 "github.com/Shonminh/bilibee/apps/collect/internal/repository/api"
 )
 
-func NewVideoCollectSchema(VideoCollectService api.VideoCollectService) *http.VideoCollectSchema {
-	return &http.VideoCollectSchema{
+func NewVideoCollectHttpSchema(VideoCollectService api.VideoCollectService) *http.VideoCollectHttpSchema {
+	return &http.VideoCollectHttpSchema{
 		VideoCollectService: VideoCollectService,
 	}
 }
@@ -20,4 +21,8 @@ func NewVideoCollectService(repo api2.CronTaskRepo) api.VideoCollectService {
 
 func NewCronTaskRepo() api2.CronTaskRepo {
 	return &repository.CronTaskRepoImpl{}
+}
+
+func NewVideoCollectTaskSchema(VideoCollectService api.VideoCollectService) *crontask.VideoCollectTaskSchema {
+	return &crontask.VideoCollectTaskSchema{VideoCollectService: VideoCollectService}
 }
