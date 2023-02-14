@@ -37,11 +37,12 @@ func (impl *VideoCollectServiceImpl) CreateCronTask(ctx context.Context, mid int
 }
 
 const defaultSize int = 100
+const hour = 3600
 
 func (impl *VideoCollectServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
 	defer func() {
 		// 针对状态为done的且更新时间大于1小时的任务，刷新任务状态为undo
-		if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, int(time.Hour)); e != nil {
+		if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, hour); e != nil {
 			logger.LogErrorf("FlushUndoStatusTask, err%+v", e.Error())
 			time.Sleep(time.Second * 3)
 		}
