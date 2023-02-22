@@ -44,7 +44,7 @@ const quarter = 900
 func (impl *VideoCollectServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
 	defer func() {
 		// 针对状态为done的且更新时间大于1小时的任务，刷新任务状态为undo
-		if time2.NowInt()%quarter == 0 { // 每15分钟执行以下FlushUndoStatusTask
+		if (time2.NowInt()/60)%quarter == 0 { // 每15分钟执行以下FlushUndoStatusTask
 			if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, hour); e != nil {
 				logger.LogErrorf("FlushUndoStatusTask, err%+v", e.Error())
 				time.Sleep(time.Second * 3)
