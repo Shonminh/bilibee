@@ -26,6 +26,7 @@ mysql.server start
 ```bash
 export DB_USERNAME=YOUR_USERNAME
 export DB_PASSWORD=YOUR_PWD
+export DB_NAME=YOUR_DB_NAME
 ```
 
 ### 生成wire_gen.go（go依赖注入）
