@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Shonminh/bilibee/pkg/logger"
-	_ "github.com/Shonminh/bilibee/pkg/logger"
 )
 
 func main() {

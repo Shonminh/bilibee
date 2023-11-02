@@ -2,6 +2,8 @@ package collect
 
 import (
 	"context"
+	"fmt"
+	bg "github.com/iyear/biligo"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
@@ -21,6 +23,15 @@ func TestBilibiliClientImpl_QueryMidTotalAidList(t *testing.T) {
 	if totalCount <= 0 {
 		t.Fatalf("total_count=%v < 0", totalCount)
 	}
+}
+
+func TestSpaceSearchVideo(t *testing.T) {
+	commClient := bg.NewCommClient(&bg.CommSetting{Client: nil, DebugMode: true,
+		UserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+	})
+	searchVideo, err := commClient.SpaceSearchVideo(35847683, "", 0, "", 1, 10)
+	fmt.Println(err)
+	fmt.Println(searchVideo)
 }
 
 func TestBilibiliClientImpl_QueryVideoInfoByAid(t *testing.T) {

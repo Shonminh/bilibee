@@ -17,7 +17,8 @@ import (
 func NewDB() *gorm.DB {
 	userName := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
-	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/bilibee_db?charset=utf8mb4&parseTime=True&loc=Local", userName, password)
+	database := os.Getenv("DB_NAME")
+	dsn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", userName, password, database)
 	newLogger := logger2.New(
 		&logger.Logger{},
 		logger2.Config{
