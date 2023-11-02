@@ -18,6 +18,9 @@
           ]
         }
       }
+    },
+    "index": {
+      "max_ngram_diff": 10
     }
   },
   "mappings": {
