@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -42,10 +43,24 @@ func (app *VideoTaskApp) Run() {
 	// 绑定db 连接
 	ctx := db.BindDbContext(context.Background(), app.db)
 
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	go app.runCollectVideoTask(ctx, wg)
+	go app.runSyncVideoInfoToEsTask(ctx, wg)
+	wg.Wait()
+}
+
+func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitGroup) {
+	defer func() {
+		wg.Done()
+		if err := recover(); err != nil {
+			logger.LogErrorf("runCollectVideoTask panic, err=%s", err)
+		}
+	}()
 	for {
 		select {
-		case <-sigChan:
-			logger.LogInfo("VideoTaskApp exit")
+		case <-ctx.Done():
+			logger.LogInfo("VideoTaskApp exit...")
 			return
 		default:
 			if err := app.schema.CollectVideo(ctx); err != nil {
@@ -53,6 +68,28 @@ func (app *VideoTaskApp) Run() {
 			}
 			time.Sleep(time.Second * 5)
 			logger.LogInfo("CollectVideo sleep 5s...")
+		}
+	}
+}
+
+func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.WaitGroup) {
+	defer func() {
+		wg.Done()
+		if err := recover(); err != nil {
+			logger.LogErrorf("runSyncVideoInfoToEsTask panic, err=%s", err)
+		}
+	}()
+	for {
+		select {
+		case <-ctx.Done():
+			logger.LogInfo("VideoTaskApp exit...")
+			return
+		default:
+			if err := app.schema.SyncVideoInfoToEs(ctx); err != nil {
+				logger.LogErrorf("SyncVideoInfoToEs failed, err=%s", err.Error())
+			}
+			time.Sleep(time.Second * 5)
+			logger.LogInfo("SyncVideoInfoToEs sleep 5s...")
 		}
 	}
 }

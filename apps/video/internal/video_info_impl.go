@@ -186,3 +186,23 @@ func (impl *VideoInfoServiceImpl) ResetTaskUndoStatus(ctx context.Context) (err 
 	}
 	return nil
 }
+
+func (impl *VideoInfoServiceImpl) SyncVideoInfoToEs(ctx context.Context) (err error) {
+	cronTaskList, err := impl.CronTaskRepo.QueryUndoCronTaskList(ctx, defaultSize, model.TaskTypeSyncVideoInfoToEs)
+	if err != nil {
+		return errors.Wrap(err, "QueryUndoCronTaskList")
+	}
+	for index := range cronTaskList {
+		task := cronTaskList[index]
+		if err = impl.doSingleSyncTask(ctx, task); err != nil {
+			return errors.Wrapf(err, "doSingleSyncTask failed, task=%+v", task)
+		}
+	}
+	logger.LogInfo("SyncVideoInfoToEs process...")
+	return nil
+}
+
+func (impl *VideoInfoServiceImpl) doSingleSyncTask(ctx context.Context, task model.CronTaskTab) error {
+	// TODO implement me
+	return nil
+}

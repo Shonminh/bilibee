@@ -19,3 +19,11 @@ func (schema *VideoCollectTaskSchema) CollectVideo(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (schema *VideoCollectTaskSchema) SyncVideoInfoToEs(ctx context.Context) error {
+	err := schema.VideoCollectService.SyncVideoInfoToEs(ctx)
+	if err != nil {
+		return errors.Wrap(err, "SyncVideoInfoToEs")
+	}
+	return nil
+}
