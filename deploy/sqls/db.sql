@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS bilibee_db.cron_task_tab
     create_time bigint(21) unsigned DEFAULT 0  NOT NULL,
     update_time bigint(21) unsigned DEFAULT 0  NOT NULL,
     KEY idx_update_time (update_time),
-    UNIQUE KEY uniq_task_id (task_id, task_type),
+    UNIQUE KEY uniq_task_id_task_type (task_id, task_type),
     KEY idx_task_type (task_type),
     PRIMARY KEY (id)
 )
