@@ -1,4 +1,4 @@
-package collect
+package video
 
 type CronTaskStatus int
 

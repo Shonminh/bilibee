@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm/clause"
 
-	"github.com/Shonminh/bilibee/apps/collect/internal/repository/model"
+	"github.com/Shonminh/bilibee/apps/video/internal/repository/model"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/time"
 )

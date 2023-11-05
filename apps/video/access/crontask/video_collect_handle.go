@@ -5,11 +5,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Shonminh/bilibee/apps/collect/api"
+	"github.com/Shonminh/bilibee/apps/video/api"
 )
 
 type VideoCollectTaskSchema struct {
-	VideoCollectService api.VideoCollectService
+	VideoCollectService api.VideoInfoService
 }
 
 func (schema *VideoCollectTaskSchema) CollectVideo(ctx context.Context) error {

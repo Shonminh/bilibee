@@ -3,29 +3,31 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	"github.com/Shonminh/bilibee/apps/video"
+	"github.com/Shonminh/bilibee/apps/video/config"
 	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
-	"github.com/Shonminh/bilibee/apps/collect"
-	"github.com/Shonminh/bilibee/apps/collect/internal/repository/api"
-	"github.com/Shonminh/bilibee/apps/collect/internal/repository/model"
+	"github.com/Shonminh/bilibee/apps/video/internal/repository/api"
+	"github.com/Shonminh/bilibee/apps/video/internal/repository/model"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/logger"
-	time2 "github.com/Shonminh/bilibee/pkg/time"
+	// time2 "github.com/Shonminh/bilibee/pkg/time"
 	collect2 "github.com/Shonminh/bilibee/third_party/bilibili/collect"
 )
 
-type VideoCollectServiceImpl struct {
+type VideoInfoServiceImpl struct {
 	CronTaskRepo  api.CronTaskRepo
 	VideoInfoRepo api.VideoInfoRepo
 	BiliClient    collect2.BilibiliClient
+	Config        *config.Config
 }
 
-func (impl *VideoCollectServiceImpl) CreateCronTask(ctx context.Context, mid int64) (err error) {
+func (impl *VideoInfoServiceImpl) CreateCronTask(ctx context.Context, mid int64, taskType model.TaskType) (err error) {
 	err = db.Transaction(ctx, func(c context.Context) error {
-		err = impl.CronTaskRepo.CreateCronTask(c, model.NewCronTaskTab(mid))
+		err = impl.CronTaskRepo.CreateCronTask(c, model.NewCronTaskTab(mid, taskType))
 		if err != nil {
 			if !db.IsMysqlDuplicateErr(err) {
 				return errors.Wrap(err, "CreateCronTask")
@@ -41,17 +43,8 @@ const defaultSize int = 100
 const hour = 3600
 const quarter = 900
 
-func (impl *VideoCollectServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
-	defer func() {
-		// 针对状态为done的且更新时间大于1小时的任务，刷新任务状态为undo
-		if (time2.NowInt()/60)%quarter == 0 { // 每15分钟执行以下FlushUndoStatusTask
-			if e := impl.CronTaskRepo.FlushUndoStatusTask(ctx, hour); e != nil {
-				logger.LogErrorf("FlushUndoStatusTask, err%+v", e.Error())
-				time.Sleep(time.Second * 3)
-			}
-		}
-	}()
-	cronTaskList, err := impl.CronTaskRepo.QueryUndoCronTaskList(ctx, defaultSize)
+func (impl *VideoInfoServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
+	cronTaskList, err := impl.CronTaskRepo.QueryUndoCronTaskList(ctx, defaultSize, model.TaskTypeGetVideoInfo)
 	if err != nil {
 		return errors.Wrap(err, "QueryUndoCronTaskList")
 	}
@@ -61,11 +54,12 @@ func (impl *VideoCollectServiceImpl) CollectVideoInfo(ctx context.Context) (err 
 			return errors.Wrapf(err, "doSingleTask failed, task=%+v", task)
 		}
 	}
+	logger.LogInfo("CollectVideoInfo process...")
 	return nil
 }
 
 // doSingleTask 针对每一个任务单次处理
-func (impl *VideoCollectServiceImpl) doSingleTask(ctx context.Context, task model.CronTaskTab) (err error) {
+func (impl *VideoInfoServiceImpl) doSingleTask(ctx context.Context, task model.CronTaskTab) (err error) {
 	mid := task.GetMid()
 	totalCount := 0
 	defer func() {
@@ -73,7 +67,7 @@ func (impl *VideoCollectServiceImpl) doSingleTask(ctx context.Context, task mode
 			time.Sleep(time.Second * 3) // 停三秒
 		}
 		// 更新一下task的进度
-		count, e := impl.VideoInfoRepo.CountVideoInfo(ctx, mid, proto.Uint32(collect.OpStatusDone.Uint32()))
+		count, e := impl.VideoInfoRepo.CountVideoInfo(ctx, mid, proto.Uint32(video.OpStatusDone.Uint32()))
 		if e != nil {
 			logger.LogErrorf("CountVideoInfo failed, err=%+v", e.Error())
 			return
@@ -81,7 +75,7 @@ func (impl *VideoCollectServiceImpl) doSingleTask(ctx context.Context, task mode
 		// 更新任务列表中的total num数量和offset num数量
 		updateArgs := map[string]interface{}{"offset_num": count, "total_num": totalCount}
 		if count == int64(totalCount) { // 相等的时候则更新为已完结
-			updateArgs["task_status"] = collect.TaskStatusDone.Uint32()
+			updateArgs["task_status"] = video.TaskStatusDone.Uint32()
 		}
 		e = impl.CronTaskRepo.UpdateCronTaskInfo(ctx, task.TaskId, updateArgs)
 		if e != nil {
@@ -91,7 +85,7 @@ func (impl *VideoCollectServiceImpl) doSingleTask(ctx context.Context, task mode
 	}()
 
 	// 如果状态是已经完成的状态的话则不用处理了
-	if task.TaskStatus == collect.TaskStatusDone.Uint32() {
+	if task.TaskStatus == video.TaskStatusDone.Uint32() {
 		logger.LogInfof("task=%+v is done, no need to process...")
 		return nil
 	}
@@ -123,11 +117,11 @@ func genVideInfoTab(aidList []int64, mid int64) (rows []model.VideoInfoTab) {
 
 const batchSize = 100
 
-func (impl *VideoCollectServiceImpl) batchUpdateVideoInfo(ctx context.Context, mid int64) (err error) {
+func (impl *VideoInfoServiceImpl) batchUpdateVideoInfo(ctx context.Context, mid int64) (err error) {
 	var limit = batchSize
 	needContinue := true
 	for needContinue {
-		videoInfoList, err := impl.VideoInfoRepo.QueryVideoInfoList(ctx, mid, nil, &limit, proto.Uint32(collect.OpStatusUndo.Uint32()))
+		videoInfoList, err := impl.VideoInfoRepo.QueryVideoInfoList(ctx, mid, nil, &limit, proto.Uint32(video.OpStatusUndo.Uint32()))
 		if err != nil {
 			return errors.Wrap(err, "QueryVideoInfoList")
 		}
@@ -158,7 +152,7 @@ func (impl *VideoCollectServiceImpl) batchUpdateVideoInfo(ctx context.Context, m
 
 const videoUri = "https://www.bilibili.com/video/"
 
-func (impl *VideoCollectServiceImpl) transformVideoInfo(info *collect2.VideoInfo, mid int64, aid uint64) model.VideoInfoTab {
+func (impl *VideoInfoServiceImpl) transformVideoInfo(info *collect2.VideoInfo, mid int64, aid uint64) model.VideoInfoTab {
 	desc, _ := json.Marshal(info.DescV2)
 	rawStr, _ := json.Marshal(info)
 	url := ""
@@ -176,7 +170,19 @@ func (impl *VideoCollectServiceImpl) transformVideoInfo(info *collect2.VideoInfo
 		UserCtime:       uint64(info.Ctime),
 		SubtitleContent: info.SubtitleContent,
 		RawStr:          string(rawStr),
-		OpStatus:        collect.OpStatusDone.Uint32(),
+		OpStatus:        video.OpStatusDone.Uint32(),
 	}
 	return infoTab
+}
+
+func (impl *VideoInfoServiceImpl) ResetTaskUndoStatus(ctx context.Context) (err error) {
+	// 刷新获取视频信息的任务
+	if err = impl.CronTaskRepo.FlushUndoStatusTask(ctx, impl.Config.ResetGetVideoTaskDurationSecond, model.TaskTypeGetVideoInfo); err != nil {
+		return errors.Wrap(err, "FlushUndoStatusTask")
+	}
+	// 刷新同步es的任务
+	if err = impl.CronTaskRepo.FlushUndoStatusTask(ctx, impl.Config.ResetSyncEsTaskDurationSecond, model.TaskTypeSyncVideoInfoToEs); err != nil {
+		return errors.Wrap(err, "FlushUndoStatusTask")
+	}
+	return nil
 }

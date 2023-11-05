@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 
-	"github.com/Shonminh/bilibee/apps/collect/access/http"
-	collect "github.com/Shonminh/bilibee/apps/collect/wire"
+	"github.com/Shonminh/bilibee/apps/video/access/http"
+	collect "github.com/Shonminh/bilibee/apps/video/wire"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/routers"
 )

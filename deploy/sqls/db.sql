@@ -4,13 +4,15 @@ CREATE TABLE IF NOT EXISTS bilibee_db.cron_task_tab
 (
     id          bigint(21) unsigned            NOT NULL AUTO_INCREMENT,
     task_id     varchar(64)         DEFAULT '' NOT NULL,
+    task_type   int(11) unsigned    DEFAULT 0  NOT NULL, -- 任务类型
     total_num   int(11) unsigned    DEFAULT 0  NOT NULL,
     offset_num  int(11) unsigned    DEFAULT 0  NOT NULL,
     task_status int(11) unsigned    DEFAULT 0  NOT NULL,
     create_time bigint(21) unsigned DEFAULT 0  NOT NULL,
     update_time bigint(21) unsigned DEFAULT 0  NOT NULL,
     KEY idx_update_time (update_time),
-    UNIQUE KEY uniq_task_id (task_id),
+    UNIQUE KEY uniq_task_id (task_id, task_type),
+    KEY idx_task_type (task_type),
     PRIMARY KEY (id)
 )
     ENGINE = InnoDB

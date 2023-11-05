@@ -1,18 +1,20 @@
 package http
 
 import (
+	"github.com/Shonminh/bilibee/apps/video/internal/repository/model"
 	"github.com/gin-gonic/gin"
 
-	"github.com/Shonminh/bilibee/apps/collect/api"
+	"github.com/Shonminh/bilibee/apps/video/api"
 	"github.com/Shonminh/bilibee/pkg/http"
 )
 
 type VideoCollectHttpSchema struct {
-	VideoCollectService api.VideoCollectService
+	VideoInfoService api.VideoInfoService
 }
 
 type VideoCollectReq struct {
-	Mid int64 `json:"mid"`
+	Mid      int64 `json:"mid"`
+	TaskType int   `json:"task_type"`
 }
 
 func (schema *VideoCollectHttpSchema) CreateCronTask(ctx *gin.Context) {
@@ -22,7 +24,7 @@ func (schema *VideoCollectHttpSchema) CreateCronTask(ctx *gin.Context) {
 		http.GenCommonResponse(ctx, http.RetCodeInvalidRequest, nil, err.Error())
 		return
 	}
-	if err = schema.VideoCollectService.CreateCronTask(ctx.Request.Context(), req.Mid); err != nil {
+	if err = schema.VideoInfoService.CreateCronTask(ctx.Request.Context(), req.Mid, model.TaskType(req.TaskType)); err != nil {
 		http.GenCommonResponse(ctx, http.RetCodeInternalErr, nil, err.Error())
 		return
 	}

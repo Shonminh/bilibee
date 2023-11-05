@@ -12,28 +12,28 @@ import (
 	"github.com/google/wire"
 	"gorm.io/gorm"
 
-	"github.com/Shonminh/bilibee/apps/collect/access/crontask"
-	collect "github.com/Shonminh/bilibee/apps/collect/wire"
+	"github.com/Shonminh/bilibee/apps/video/access/crontask"
+	collect "github.com/Shonminh/bilibee/apps/video/wire"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/logger"
 )
 
-type CollectTaskApp struct {
+type VideoTaskApp struct {
 	db     *gorm.DB
 	schema *crontask.VideoCollectTaskSchema
 }
 
-func InitCollectTaskApp() (*CollectTaskApp, error) {
+func InitVideoTaskApp() (*VideoTaskApp, error) {
 	wire.Build(
 		db.NewDB,
 		collect.CollectTaskSet,
-		wire.Struct(new(CollectTaskApp), "*"),
+		wire.Struct(new(VideoTaskApp), "*"),
 	)
 
-	return &CollectTaskApp{}, nil
+	return &VideoTaskApp{}, nil
 }
 
-func (app *CollectTaskApp) Run() {
+func (app *VideoTaskApp) Run() {
 
 	sigChan := make(chan os.Signal, 1)
 	defer close(sigChan)
@@ -45,13 +45,14 @@ func (app *CollectTaskApp) Run() {
 	for {
 		select {
 		case <-sigChan:
-			logger.LogInfo("CollectTaskApp exit")
+			logger.LogInfo("VideoTaskApp exit")
 			return
 		default:
 			if err := app.schema.CollectVideo(ctx); err != nil {
 				logger.LogErrorf("CollectVideo failed, err=%s", err.Error())
 			}
 			time.Sleep(time.Second * 5)
+			logger.LogInfo("CollectVideo sleep 5s...")
 		}
 	}
 }

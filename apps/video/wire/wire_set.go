@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"github.com/Shonminh/bilibee/apps/video/config"
 	"github.com/google/wire"
 
 	"github.com/Shonminh/bilibee/third_party/bilibili/collect"
@@ -8,6 +9,7 @@ import (
 
 var CollectServerSet = wire.NewSet(
 	NewVideoCollectHttpSchema,
+	config.NewConfig,
 	NewVideoCollectService,
 	NewCronTaskRepo,
 	NewVideoInfoRepo,
@@ -16,6 +18,7 @@ var CollectServerSet = wire.NewSet(
 
 var CollectTaskSet = wire.NewSet(
 	NewVideoCollectTaskSchema,
+	config.NewConfig,
 	NewVideoCollectService,
 	NewCronTaskRepo,
 	NewVideoInfoRepo,

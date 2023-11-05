@@ -5,10 +5,10 @@ import (
 )
 
 func main() {
-	app, err := InitCollectTaskApp()
+	app, err := InitVideoTaskApp()
 	if err != nil {
 		logger.LogPanic(err)
 	}
-	logger.LogInfof("CollectTaskApp run...")
+	logger.LogInfof("VideoTaskApp run...")
 	app.Run()
 }

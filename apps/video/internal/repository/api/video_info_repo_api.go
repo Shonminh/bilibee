@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/Shonminh/bilibee/apps/collect/internal/repository/model"
+	"github.com/Shonminh/bilibee/apps/video/internal/repository/model"
 )
 
 type VideoInfoRepo interface {

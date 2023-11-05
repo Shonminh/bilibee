@@ -2,11 +2,11 @@ package repository
 
 import (
 	"context"
+	"github.com/Shonminh/bilibee/apps/video"
 
 	"github.com/pkg/errors"
 
-	"github.com/Shonminh/bilibee/apps/collect"
-	"github.com/Shonminh/bilibee/apps/collect/internal/repository/model"
+	"github.com/Shonminh/bilibee/apps/video/internal/repository/model"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/time"
 )
@@ -26,8 +26,9 @@ func (impl *CronTaskRepoImpl) CreateCronTask(ctx context.Context, row model.Cron
 	return nil
 }
 
-func (impl *CronTaskRepoImpl) QueryUndoCronTaskList(ctx context.Context, limit int) (res []model.CronTaskTab, err error) {
-	err = db.GetDb(ctx).Model(&model.CronTaskTab{}).Where("task_status = ? ", collect.TaskStatusUndo).Order("update_time DESC").Limit(limit).Find(&res).Error
+func (impl *CronTaskRepoImpl) QueryUndoCronTaskList(ctx context.Context, limit int, taskType model.TaskType) (res []model.CronTaskTab, err error) {
+	err = db.GetDb(ctx).Model(&model.CronTaskTab{}).Where("task_status = ? AND task_type = ? ", video.TaskStatusUndo, taskType).
+		Order("update_time DESC").Limit(limit).Find(&res).Error
 	return res, errors.Wrap(err, "QueryUndoCronTaskList")
 }
 
@@ -39,10 +40,11 @@ func (impl *CronTaskRepoImpl) UpdateCronTaskInfo(ctx context.Context, taskId str
 	return errors.Wrapf(err, "UpdateCronTaskInfo, task_id=%s, updateArgs=%+v, err=%+v", taskId, updateArgs, err)
 }
 
-func (impl *CronTaskRepoImpl) FlushUndoStatusTask(ctx context.Context, durationSecond int) (err error) {
+func (impl *CronTaskRepoImpl) FlushUndoStatusTask(ctx context.Context, durationSecond int, taskType model.TaskType) (err error) {
 	updateTime := time.NowInt() - durationSecond
 	err = db.GetDb(ctx).Model(&model.CronTaskTab{}).Where("update_time < ? ", updateTime).Updates(map[string]interface{}{
-		"task_status": collect.TaskStatusUndo,
+		"task_status": video.TaskStatusUndo,
+		"task_type":   taskType,
 		"update_time": time.NowInt(),
 	}).Error
 	return errors.Wrap(err, "FlushCronTaskStatus")
