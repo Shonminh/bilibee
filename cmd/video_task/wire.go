@@ -48,7 +48,7 @@ func (app *VideoTaskApp) Run() {
 	go app.runCollectVideoTask(ctx, wg)
 	go app.runSyncVideoInfoToEsTask(ctx, wg)
 	go app.runResetTaskStatusTask(ctx, wg)
-	go wg.Wait()
+	wg.Wait()
 }
 
 func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitGroup) {

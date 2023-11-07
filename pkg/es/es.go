@@ -27,7 +27,7 @@ func NewEsClient() *elasticsearch8.Client {
 	}
 	es, err := elasticsearch8.NewClient(cfg)
 	if err != nil {
-		logger.LogPanic(err)
+		logger.LogPanicf("NewEsClient error: %v", err)
 	}
 	return es
 }

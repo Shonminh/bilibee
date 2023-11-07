@@ -7,7 +7,7 @@ import (
 func main() {
 	app, err := InitVideoTaskApp()
 	if err != nil {
-		logger.LogPanic(err)
+		logger.LogPanicf("InitVideoTaskApp error: %v", err)
 	}
 	logger.LogInfof("VideoTaskApp run...")
 	app.Run()
