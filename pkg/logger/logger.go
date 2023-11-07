@@ -22,6 +22,10 @@ type Logger struct {
 }
 
 func GetOutput() (io.Writer, error) {
+	// 如果是dev环境，直接输出到控制台
+	if os.Getenv("ENV") == "dev" {
+		return os.Stdout, nil
+	}
 	file, err := os.OpenFile("log/data.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	return file, err
 }

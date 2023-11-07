@@ -44,7 +44,6 @@ func (app *VideoTaskApp) Run() {
 	ctx := db.BindDbContext(context.Background(), app.db)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(3)
 	go app.runCollectVideoTask(ctx, wg)
 	go app.runSyncVideoInfoToEsTask(ctx, wg)
 	go app.runResetTaskStatusTask(ctx, wg)
@@ -52,6 +51,7 @@ func (app *VideoTaskApp) Run() {
 }
 
 func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitGroup) {
+	wg.Add(1)
 	defer func() {
 		wg.Done()
 		if err := recover(); err != nil {
@@ -67,6 +67,7 @@ func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitG
 			if err := app.schema.CollectVideo(ctx); err != nil {
 				logger.LogErrorf("CollectVideo failed, err=%s", err.Error())
 			}
+			logger.LogInfof("CollectVideo done...")
 			time.Sleep(time.Second * 5)
 			logger.LogInfo("CollectVideo sleep 5s...")
 		}
@@ -74,6 +75,7 @@ func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitG
 }
 
 func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.WaitGroup) {
+	wg.Add(1)
 	defer func() {
 		wg.Done()
 		if err := recover(); err != nil {
@@ -89,6 +91,7 @@ func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.
 			if err := app.schema.SyncVideoInfoToEs(ctx); err != nil {
 				logger.LogErrorf("SyncVideoInfoToEs failed, err=%s", err.Error())
 			}
+			logger.LogInfof("SyncVideoInfoToEs done...")
 			time.Sleep(time.Second * 30)
 			logger.LogInfo("SyncVideoInfoToEs sleep 30s...")
 		}
@@ -96,6 +99,7 @@ func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.
 }
 
 func (app *VideoTaskApp) runResetTaskStatusTask(ctx context.Context, wg *sync.WaitGroup) {
+	wg.Add(1)
 	defer func() {
 		wg.Done()
 		if err := recover(); err != nil {
@@ -111,6 +115,7 @@ func (app *VideoTaskApp) runResetTaskStatusTask(ctx context.Context, wg *sync.Wa
 			if err := app.schema.ResetTaskUndoStatus(ctx); err != nil {
 				logger.LogErrorf("ResetTaskStatus failed, err=%s", err.Error())
 			}
+			logger.LogInfof("ResetTaskStatus done...")
 			time.Sleep(time.Hour)
 			logger.LogInfo("ResetTaskStatus sleep 1 hour...")
 		}

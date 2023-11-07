@@ -219,7 +219,6 @@ func (impl *VideoInfoServiceImpl) SyncVideoInfoToEs(ctx context.Context) (err er
 			return errors.Wrapf(err, "doSingleSyncTask failed, task=%+v", task)
 		}
 	}
-	logger.LogInfo("SyncVideoInfoToEs process...")
 	return nil
 }
 
