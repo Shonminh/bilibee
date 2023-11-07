@@ -35,13 +35,14 @@ func UseGinLogger() gin.HandlerFunc {
 		logger.LogPanic(err)
 	}
 	return l.SetLogger(l.WithLogger(func(ctx *gin.Context, z zerolog.Logger) zerolog.Logger {
-		data, _ := ctx.GetRawData()
+		rawData, _ := ctx.GetRawData()
+		data := rawData
 		if len(data) > maxReqDataLength {
-			data = data[:maxReqDataLength]
+			data = rawData[:maxReqDataLength]
 		}
 		logger.LogInfof("%s", string(data))
 		// 赋值，保证下次可以读取
-		readCloser := io.NopCloser(bytes.NewReader(data))
+		readCloser := io.NopCloser(bytes.NewReader(rawData))
 		ctx.Request.Body = readCloser
 		consoleWriter := zerolog.ConsoleWriter{
 			Out:        output,
