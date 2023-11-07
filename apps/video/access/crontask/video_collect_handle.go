@@ -27,3 +27,11 @@ func (schema *VideoCollectTaskSchema) SyncVideoInfoToEs(ctx context.Context) err
 	}
 	return nil
 }
+
+func (schema *VideoCollectTaskSchema) ResetTaskUndoStatus(ctx context.Context) error {
+	err := schema.VideoCollectService.ResetTaskUndoStatus(ctx)
+	if err != nil {
+		return errors.Wrap(err, "ResetTaskUndoStatus")
+	}
+	return nil
+}

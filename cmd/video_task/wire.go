@@ -44,10 +44,11 @@ func (app *VideoTaskApp) Run() {
 	ctx := db.BindDbContext(context.Background(), app.db)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(3)
 	go app.runCollectVideoTask(ctx, wg)
 	go app.runSyncVideoInfoToEsTask(ctx, wg)
-	wg.Wait()
+	go app.runResetTaskStatusTask(ctx, wg)
+	go wg.Wait()
 }
 
 func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitGroup) {
@@ -88,8 +89,30 @@ func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.
 			if err := app.schema.SyncVideoInfoToEs(ctx); err != nil {
 				logger.LogErrorf("SyncVideoInfoToEs failed, err=%s", err.Error())
 			}
-			time.Sleep(time.Second * 5)
-			logger.LogInfo("SyncVideoInfoToEs sleep 5s...")
+			time.Sleep(time.Second * 30)
+			logger.LogInfo("SyncVideoInfoToEs sleep 30s...")
+		}
+	}
+}
+
+func (app *VideoTaskApp) runResetTaskStatusTask(ctx context.Context, wg *sync.WaitGroup) {
+	defer func() {
+		wg.Done()
+		if err := recover(); err != nil {
+			logger.LogErrorf("runResetTaskStatusTask panic, err=%s", err)
+		}
+	}()
+	for {
+		select {
+		case <-ctx.Done():
+			logger.LogInfo("VideoTaskApp exit...")
+			return
+		default:
+			if err := app.schema.ResetTaskUndoStatus(ctx); err != nil {
+				logger.LogErrorf("ResetTaskStatus failed, err=%s", err.Error())
+			}
+			time.Sleep(time.Hour)
+			logger.LogInfo("ResetTaskStatus sleep 1 hour...")
 		}
 	}
 }

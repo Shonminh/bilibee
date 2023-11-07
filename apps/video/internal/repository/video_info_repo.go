@@ -62,3 +62,9 @@ func (impl *VideoInfoRepoImpl) CountVideoInfo(ctx context.Context, mid int64, op
 	}
 	return res, nil
 }
+
+func (impl *VideoInfoRepoImpl) QueryVideoInfosByUpdateTime(ctx context.Context, mid int64, updateTimeDuration int) (res []*model.VideoInfoTab, err error) {
+	now := time.NowInt()
+	err = db.GetDb(ctx).Model(&model.VideoInfoTab{}).Where("mid = ? AND update_time >= ? AND update_time < ? ", mid, now-updateTimeDuration, now).Order("update_time ASC").Find(&res).Error
+	return res, errors.Wrapf(err, "QueryVideoInfosByUpdateTime, mid=%+v, updateTimeDuration=%+v", mid, updateTimeDuration)
+}

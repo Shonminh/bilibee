@@ -9,6 +9,7 @@ import (
 	"github.com/Shonminh/bilibee/apps/video/internal/repository"
 	api2 "github.com/Shonminh/bilibee/apps/video/internal/repository/api"
 	"github.com/Shonminh/bilibee/third_party/bilibili/collect"
+	elasticsearch8 "github.com/elastic/go-elasticsearch/v8"
 )
 
 func NewVideoCollectHttpSchema(VideoCollectService api.VideoInfoService) *http.VideoCollectHttpSchema {
@@ -17,8 +18,10 @@ func NewVideoCollectHttpSchema(VideoCollectService api.VideoInfoService) *http.V
 	}
 }
 
-func NewVideoCollectService(repo api2.CronTaskRepo, videoInfoRepo api2.VideoInfoRepo, client collect.BilibiliClient, config *config.Config) api.VideoInfoService {
-	return &internal.VideoInfoServiceImpl{CronTaskRepo: repo, VideoInfoRepo: videoInfoRepo, BiliClient: client, Config: config}
+func NewVideoCollectService(repo api2.CronTaskRepo, videoInfoRepo api2.VideoInfoRepo, client collect.BilibiliClient,
+	config *config.Config, esClient *elasticsearch8.Client) api.VideoInfoService {
+	return &internal.VideoInfoServiceImpl{CronTaskRepo: repo, VideoInfoRepo: videoInfoRepo, BiliClient: client,
+		Config: config, EsClient: esClient}
 }
 
 func NewCronTaskRepo() api2.CronTaskRepo {

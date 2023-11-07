@@ -1,10 +1,18 @@
 package internal
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/Shonminh/bilibee/apps/video"
 	"github.com/Shonminh/bilibee/apps/video/config"
+	time2 "github.com/Shonminh/bilibee/pkg/time"
+	elasticsearch8 "github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esutil"
+	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -23,6 +31,7 @@ type VideoInfoServiceImpl struct {
 	VideoInfoRepo api.VideoInfoRepo
 	BiliClient    collect2.BilibiliClient
 	Config        *config.Config
+	EsClient      *elasticsearch8.Client
 }
 
 func (impl *VideoInfoServiceImpl) CreateCronTask(ctx context.Context, mid int64, taskType model.TaskType) (err error) {
@@ -203,6 +212,140 @@ func (impl *VideoInfoServiceImpl) SyncVideoInfoToEs(ctx context.Context) (err er
 }
 
 func (impl *VideoInfoServiceImpl) doSingleSyncTask(ctx context.Context, task model.CronTaskTab) error {
-	// TODO implement me
+	if task.TaskStatus == video.TaskStatusDone.Uint32() {
+		logger.LogInfof("task=%+v is done, no need to process...")
+		return nil
+	}
+
+	mid := task.GetMid()
+	defer func() {
+		totalCount, err := impl.VideoInfoRepo.CountVideoInfo(ctx, mid, nil)
+		if err != nil {
+			logger.LogErrorf("CountVideoInfo failed, err=%+v", err.Error())
+			return
+		}
+		successCount, err := impl.VideoInfoRepo.CountVideoInfo(ctx, mid, proto.Uint32(video.OpStatusDone.Uint32()))
+		if err != nil {
+			logger.LogErrorf("CountVideoInfo failed, err=%+v", err.Error())
+			return
+		}
+		err = impl.CronTaskRepo.UpdateCronTaskInfo(ctx, task.TaskId, map[string]interface{}{
+			"offset_num":  successCount,
+			"total_num":   totalCount,
+			"task_status": video.TaskStatusDone.Uint32(),
+		})
+		if err != nil {
+			logger.LogErrorf("UpdateCronTaskInfo failed, err=%+v", err.Error())
+			return
+		}
+	}()
+
+	rows, err := impl.VideoInfoRepo.QueryVideoInfosByUpdateTime(ctx, mid, impl.Config.ScanVideoInfoUpdateTimeDurationSecond)
+	if err != nil {
+		return errors.Wrap(err, "QueryVideoInfosByUpdateTime")
+	}
+	if len(rows) == 0 {
+		return nil
+	}
+	// 批量同步到es中
+	if err = impl.batchSyncVideoInfoToEs(ctx, rows); err != nil {
+		return errors.Wrap(err, "batchSyncVideoInfoToEs")
+	}
+	return nil
+}
+
+func (impl *VideoInfoServiceImpl) batchSyncVideoInfoToEs(ctx context.Context, rows []*model.VideoInfoTab) error {
+
+	for index := 0; index < len(rows); index += batchSize {
+		start := index
+		end := start + batchSize
+		if end > len(rows) {
+			end = len(rows)
+		}
+		subRows := rows[start:end]
+		// 批量同步到es中
+		if err := impl.syncVideoInfoToEs(ctx, subRows); err != nil {
+			return errors.Wrap(err, "syncVideoInfoToEs")
+		}
+	}
+	return nil
+}
+
+var ErrIndexNotExist = errors.New("index not exist")
+
+func (impl *VideoInfoServiceImpl) existVideoInfoIndex(ctx context.Context) error {
+	indicesExists := impl.EsClient.Indices.Exists
+	exists, err := indicesExists([]string{model.VideoInfoMapping{}.IndexName()}, indicesExists.WithContext(ctx), indicesExists.WithPretty())
+	if err != nil {
+		return errors.Wrap(err, "Indices.Exists")
+	}
+	if exists == nil || exists.StatusCode == http.StatusOK {
+		return nil
+	}
+	return ErrIndexNotExist
+}
+
+func (impl *VideoInfoServiceImpl) createVideoInfoIndex(ctx context.Context) error {
+	create := impl.EsClient.Indices.Create
+	response, err := create(model.VideoInfoMapping{}.IndexName(), create.WithBody(strings.NewReader(model.VideoInfoMapping{}.Mapping())), create.WithContext(ctx), create.WithPretty())
+	if err != nil {
+		return errors.Wrap(err, "Indices.Create")
+	}
+	if response == nil || response.StatusCode == http.StatusOK {
+		return nil
+	}
+	return errors.New(fmt.Sprintf("Indices.Create failed, response=%+v", response))
+}
+
+func (impl *VideoInfoServiceImpl) syncVideoInfoToEs(ctx context.Context, rows []*model.VideoInfoTab) error {
+	if len(rows) == 0 {
+		return nil
+	}
+
+	esModels := make([]*model.VideoInfoMapping, len(rows))
+	for i := range rows {
+		row := rows[i]
+		esModels[i] = &model.VideoInfoMapping{
+			Id:              row.Id,
+			Mid:             row.Mid,
+			Aid:             row.Aid,
+			Bvid:            row.Bvid,
+			Url:             row.Url,
+			Title:           row.Title,
+			DescV2:          row.DescV2,
+			Pubdate:         row.Pubdate,
+			UserCtime:       row.UserCtime,
+			SubtitleContent: row.SubtitleContent,
+			RawStr:          row.RawStr,
+			OpStatus:        row.OpStatus,
+			CreateTime:      row.CreateTime,
+			UpdateTime:      row.UpdateTime,
+			EsUpdateTime:    time2.NowUint64(),
+		}
+	}
+	bulkIndexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{Client: impl.EsClient})
+	if err != nil {
+		return errors.Wrap(err, "NewBulkIndexer")
+	}
+
+	defer func() {
+		e := bulkIndexer.Close(ctx)
+		if e != nil {
+			logger.LogErrorf("bulkIndexer Close failed, err=%+v", e)
+		}
+	}()
+
+	for i := range esModels {
+		esModel := esModels[i]
+		marshal, _ := json.Marshal(esModel)
+		err = bulkIndexer.Add(ctx, esutil.BulkIndexerItem{
+			Index:      esModel.IndexName(),
+			Action:     "index",
+			DocumentID: strconv.FormatUint(esModel.Id, 10),
+			Body:       bytes.NewReader(marshal),
+		})
+		logger.LogErrorf("bulkIndexer Add failed, err=%+v", err)
+	}
+
 	return nil
 }
