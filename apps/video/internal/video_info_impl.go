@@ -201,6 +201,18 @@ func (impl *VideoInfoServiceImpl) SyncVideoInfoToEs(ctx context.Context) (err er
 	if err != nil {
 		return errors.Wrap(err, "QueryUndoCronTaskList")
 	}
+
+	// 如果索引不存的话则进行创建。
+	if err = impl.existVideoInfoIndex(ctx); err != nil {
+		if errors.Cause(err) != ErrIndexNotExist {
+			return errors.Wrap(err, "existVideoInfoIndex")
+		}
+		if err = impl.createVideoInfoIndex(ctx); err != nil {
+			return errors.Wrap(err, "createVideoInfoIndex")
+		}
+	}
+
+	// 每个任务单独处理
 	for index := range cronTaskList {
 		task := cronTaskList[index]
 		if err = impl.doSingleSyncTask(ctx, task); err != nil {
