@@ -24,9 +24,10 @@ mysql.server start
 
 ### 配置环境变量
 ```bash
-export DB_USERNAME=YOUR_USERNAME
-export DB_PASSWORD=YOUR_PWD
-export DB_NAME=YOUR_DB_NAME
+export DB_USERNAME=YOUR_USERNAME -- 数据库用户名
+export DB_PASSWORD=YOUR_PWD -- 数据库密码
+export DB_NAME=YOUR_DB_NAME -- 数据库名称
+export ES_ADDRESS_LIST=YOUR_ES_ADDRESS_LIST -- es地址 用逗号分隔
 ```
 
 ### 生成wire_gen.go（go依赖注入）

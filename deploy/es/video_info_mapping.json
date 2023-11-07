@@ -71,6 +71,9 @@
       },
       "update_time": {
         "type": "long"
+      },
+      "es_update_time": {
+        "type": "long"
       }
     }
   }
