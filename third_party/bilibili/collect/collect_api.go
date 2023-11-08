@@ -11,7 +11,7 @@ type VideoInfo struct {
 	SubtitleContent string `json:"subtitle_content"`
 }
 
-type BilibiliClient interface {
+type BiliBiliClient interface {
 	// QueryVideoInfoByAid 根据aid查询视频信息
 	QueryVideoInfoByAid(ctx context.Context, aid int64) (*VideoInfo, error)
 	// QueryMidTotalAidList 获取UP主的投稿的所有视频aid列表

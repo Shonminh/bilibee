@@ -28,7 +28,20 @@ export DB_USERNAME=YOUR_USERNAME -- 数据库用户名
 export DB_PASSWORD=YOUR_PWD -- 数据库密码
 export DB_NAME=YOUR_DB_NAME -- 数据库名称
 export ES_ADDRESS_LIST=YOUR_ES_ADDRESS_LIST -- es地址 用逗号分隔
+export DedeUserID=YOUR_DedeUserID -- B站cookie中的DedeUserID
+export SESSDATA=YOUR_SESSDATA -- B站cookie中的SESSDATA
+export BiliJCT=YOUR_BiliJCT -- B站cookie中的BiliJCT
+export DedeUserIDCkMd5=YOUR_DedeUserIDCkMd5 -- B站cookie中的DedeUserIDCkMd5
 ```
+
+> 如何获取B站cookie中的DedeUserID、SESSDATA、BiliJCT、DedeUserIDCkMd5？
+1. 登录B站
+2. 打开开发者工具，找到Network选项卡
+3. 找到任意一个请求，找到Request Headers中的cookie，复制即可
+
+> 为什么需要这些cookie？
+
+因为B站的视频信息中的字幕是需要登录后才能获取的，所以需要这些cookie来模拟登录。
 
 ### 生成wire_gen.go（go依赖注入）
 ```bash

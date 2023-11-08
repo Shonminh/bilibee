@@ -14,7 +14,7 @@ var CollectServerSet = wire.NewSet(
 	NewVideoCollectService,
 	NewCronTaskRepo,
 	NewVideoInfoRepo,
-	collect.NewBilibiliClient,
+	collect.NewBiliBiliClient,
 	es.NewEsClient,
 )
 
@@ -24,6 +24,6 @@ var CollectTaskSet = wire.NewSet(
 	NewVideoCollectService,
 	NewCronTaskRepo,
 	NewVideoInfoRepo,
-	collect.NewBilibiliClient,
+	collect.NewBiliBiliClient,
 	es.NewEsClient,
 )

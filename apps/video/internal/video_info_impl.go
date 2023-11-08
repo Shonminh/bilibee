@@ -29,7 +29,7 @@ import (
 type VideoInfoServiceImpl struct {
 	CronTaskRepo  api.CronTaskRepo
 	VideoInfoRepo api.VideoInfoRepo
-	BiliClient    collect2.BilibiliClient
+	BiliClient    collect2.BiliBiliClient
 	Config        *config.Config
 	EsClient      *elasticsearch8.Client
 }
@@ -49,8 +49,6 @@ func (impl *VideoInfoServiceImpl) CreateCronTask(ctx context.Context, mid int64,
 }
 
 const defaultSize int = 100
-const hour = 3600
-const quarter = 900
 
 func (impl *VideoInfoServiceImpl) CollectVideoInfo(ctx context.Context) (err error) {
 	cronTaskList, err := impl.CronTaskRepo.QueryUndoCronTaskList(ctx, defaultSize, model.TaskTypeGetVideoInfo)
@@ -82,10 +80,7 @@ func (impl *VideoInfoServiceImpl) doSingleTask(ctx context.Context, task model.C
 			return
 		}
 		// 更新任务列表中的total num数量和offset num数量
-		updateArgs := map[string]interface{}{"offset_num": count, "total_num": totalCount}
-		if count == int64(totalCount) { // 相等的时候则更新为已完结
-			updateArgs["task_status"] = video.TaskStatusDone.Uint32()
-		}
+		updateArgs := map[string]interface{}{"offset_num": count, "total_num": totalCount, "task_status": video.TaskStatusDone.Uint32()}
 		e = impl.CronTaskRepo.UpdateCronTaskInfo(ctx, task.TaskId, updateArgs)
 		if e != nil {
 			logger.LogErrorf("UpdateCronTaskInfo failed, err=%+v", e.Error())

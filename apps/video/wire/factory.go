@@ -18,7 +18,7 @@ func NewVideoCollectHttpSchema(VideoCollectService api.VideoInfoService) *http.V
 	}
 }
 
-func NewVideoCollectService(repo api2.CronTaskRepo, videoInfoRepo api2.VideoInfoRepo, client collect.BilibiliClient,
+func NewVideoCollectService(repo api2.CronTaskRepo, videoInfoRepo api2.VideoInfoRepo, client collect.BiliBiliClient,
 	config *config.Config, esClient *elasticsearch8.Client) api.VideoInfoService {
 	return &internal.VideoInfoServiceImpl{CronTaskRepo: repo, VideoInfoRepo: videoInfoRepo, BiliClient: client,
 		Config: config, EsClient: esClient}

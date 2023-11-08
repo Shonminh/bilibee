@@ -44,6 +44,7 @@ func (app *VideoTaskApp) Run() {
 	ctx := db.BindDbContext(context.Background(), app.db)
 
 	wg := &sync.WaitGroup{}
+	wg.Add(3)
 	go app.runCollectVideoTask(ctx, wg)
 	go app.runSyncVideoInfoToEsTask(ctx, wg)
 	go app.runResetTaskStatusTask(ctx, wg)
@@ -51,7 +52,6 @@ func (app *VideoTaskApp) Run() {
 }
 
 func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
 	defer func() {
 		wg.Done()
 		if err := recover(); err != nil {
@@ -75,7 +75,6 @@ func (app *VideoTaskApp) runCollectVideoTask(ctx context.Context, wg *sync.WaitG
 }
 
 func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
 	defer func() {
 		wg.Done()
 		if err := recover(); err != nil {
@@ -99,7 +98,6 @@ func (app *VideoTaskApp) runSyncVideoInfoToEsTask(ctx context.Context, wg *sync.
 }
 
 func (app *VideoTaskApp) runResetTaskStatusTask(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
 	defer func() {
 		wg.Done()
 		if err := recover(); err != nil {

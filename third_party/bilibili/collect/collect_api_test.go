@@ -10,7 +10,7 @@ import (
 )
 
 func TestBilibiliClientImpl_QueryMidTotalAidList(t *testing.T) {
-	client := NewBilibiliClient()
+	client := NewBiliBiliClient()
 	mid := int64(35847683) // 峰哥亡命天涯
 	totalAidList, totalCount, err := client.QueryMidTotalAidList(context.TODO(), mid, proto.Int64(60))
 	if err != nil {
@@ -35,7 +35,7 @@ func TestSpaceSearchVideo(t *testing.T) {
 }
 
 func TestBilibiliClientImpl_QueryVideoInfoByAid(t *testing.T) {
-	client := NewBilibiliClient()
+	client := NewBiliBiliClient()
 	videoInfo, err := client.QueryVideoInfoByAid(context.TODO(), 478629139)
 	if err != nil {
 		t.Fatalf("QueryVideoInfoByAid failed, err=%+v", err)
