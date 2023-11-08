@@ -22,7 +22,6 @@ import (
 	"github.com/Shonminh/bilibee/apps/video/internal/repository/model"
 	"github.com/Shonminh/bilibee/pkg/db"
 	"github.com/Shonminh/bilibee/pkg/logger"
-	// time2 "github.com/Shonminh/bilibee/pkg/time"
 	collect2 "github.com/Shonminh/bilibee/third_party/bilibili/collect"
 )
 
@@ -322,7 +321,6 @@ func (impl *VideoInfoServiceImpl) syncVideoInfoToEs(ctx context.Context, rows []
 			Pubdate:         row.Pubdate,
 			UserCtime:       row.UserCtime,
 			SubtitleContent: row.SubtitleContent,
-			RawStr:          row.RawStr,
 			OpStatus:        row.OpStatus,
 			CreateTime:      row.CreateTime,
 			UpdateTime:      row.UpdateTime,
@@ -350,7 +348,9 @@ func (impl *VideoInfoServiceImpl) syncVideoInfoToEs(ctx context.Context, rows []
 			DocumentID: strconv.FormatUint(esModel.Id, 10),
 			Body:       bytes.NewReader(marshal),
 		})
-		logger.LogErrorf("bulkIndexer Add failed, err=%+v", err)
+		if err != nil {
+			logger.LogErrorf("bulkIndexer Add failed, err=%+v", err)
+		}
 	}
 
 	return nil

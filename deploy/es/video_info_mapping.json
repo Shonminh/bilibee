@@ -36,18 +36,33 @@
       },
       "bvid": {
         "type": "text",
-        "analyzer": "ngram_analyzer"
+        "analyzer": "ngram_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "url": {
         "type": "text"
       },
       "title": {
         "type": "text",
-        "analyzer": "ngram_analyzer"
+        "analyzer": "ngram_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "desc_v2": {
         "type": "text",
-        "analyzer": "ngram_analyzer"
+        "analyzer": "ngram_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "pubdate": {
         "type": "long"
@@ -57,11 +72,12 @@
       },
       "subtitle_content": {
         "type": "text",
-        "analyzer": "ngram_analyzer"
-      },
-      "raw_str": {
-        "type": "text",
-        "analyzer": "ngram_analyzer"
+        "analyzer": "ngram_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "op_status": {
         "type": "integer"
